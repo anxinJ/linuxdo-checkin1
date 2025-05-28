@@ -133,7 +133,7 @@ class LinuxDoBrowser:
 
         turnstileResponse = None
 
-        for i in range(0, 5):
+        for i in range(0, 10):
             try:
                 turnstileResponse = self.page.run_js(
                     "try { return turnstile.getResponse() } catch(e) { return null }"
