@@ -253,21 +253,24 @@ class LinuxDoBrowser:
         page = self.browser.new_tab()
         page.get("https://connect.linux.do/")
         rows = page.ele("tag:table").eles("tag:tr")
-
-        info = []
-
-        for row in rows:
-            cells = row.eles("tag:td")
-            if len(cells) >= 3:
-                project = cells[0].text.strip()
-                current = cells[1].text.strip()
-                requirement = cells[2].text.strip()
-                info.append([project, current, requirement])
-        msg = tabulate(info, headers=["项目", "当前", "要求"], tablefmt="pretty")
-        print("--------------Connect Info-----------------")
-        print(msg)
-        List.append(msg)
-
+        if rows:
+    
+            info = []
+    
+            for row in rows:
+                cells = row.eles("tag:td")
+                if len(cells) >= 3:
+                    project = cells[0].text.strip()
+                    current = cells[1].text.strip()
+                    requirement = cells[2].text.strip()
+                    info.append([project, current, requirement])
+            msg = tabulate(info, headers=["项目", "当前", "要求"], tablefmt="pretty")
+            print("--------------Connect Info-----------------")
+            print(msg)
+            List.append(msg)
+        else:
+            logger.info("连接错误，请检查！（账户等级过低，无法查看任务信息）")
+            List.append("连接错误，请检查！（账户等级过低，无法查看任务信息）")
         page.close()
 
     def send_notifications(self, browse_enabled):
