@@ -8,8 +8,6 @@ import random
 import time
 import functools
 import sys
-import requests
-import re
 from loguru import logger
 from DrissionPage import ChromiumOptions, Chromium
 from tabulate import tabulate
@@ -115,7 +113,8 @@ LOGIN_URL = "https://linux.do/login"
 
 class LinuxDoBrowser:
     def __init__(self) -> None:
-        co = ChromiumOptions().set_browser_path(r"/usr/bin/google-chrome-stable")
+        # co = ChromiumOptions().set_browser_path(r"/usr/bin/google-chrome-stable")
+        co = ChromiumOptions()
         co.auto_port()
         co.set_timeouts(base=2)
         turnstilePatch = create_extension(plugin_path="turnstilePatch")
@@ -126,18 +125,15 @@ class LinuxDoBrowser:
         co.set_argument('--disable-gpu')
         
         self.browser = Chromium(co)
-        self.page = self.browser.get_tabs()[-1]
+        self.page = self.browser.new_tab()
 
     def getTurnstileToken(self):
         self.page.run_js("try { turnstile.reset() } catch(e) { }")
 
         turnstileResponse = None
-
         for i in range(0, 10):
             try:
-                turnstileResponse = self.page.run_js(
-                    "try { return turnstile.getResponse() } catch(e) { return null }"
-                )
+                turnstileResponse = self.page.run_js("try { return turnstile.getResponse() } catch(e) { return null }")
                 if turnstileResponse:
                     return turnstileResponse
 
@@ -150,7 +146,7 @@ class LinuxDoBrowser:
             except Exception as e:
                 logger.warning(f"处理 Turnstile 时出错: {str(e)}")
             time.sleep(1)
-        # self.page.refresh()
+        self.page.refresh()
         # raise Exception("failed to solve turnstile")
 
     def login(self):
@@ -159,20 +155,27 @@ class LinuxDoBrowser:
         time.sleep(2)
         turnstile_token = self.getTurnstileToken()
         logger.info(f"turnstile_token: {turnstile_token}")
-        self.page.get_screenshot("screenshot.png")
-        self.page.ele("@id=login-account-name").input(USERNAME)
-        self.page.ele("@id=login-account-password").input(PASSWORD)
-        self.page.ele("@id=login-button").click()
-        time.sleep(10)
-        user_ele = self.page.ele("@id=current-user")
-        if not user_ele:
-            logger.error("登录失败")
-            List.append("❌每日登录失败")
-            return False
+        if turnstile_token:
+            self.page.get_screenshot("screenshot.png")
+            self.page.ele("@id=login-account-name").input(USERNAME)
+            self.page.ele("@id=login-account-password").input(PASSWORD)
+            self.page.ele("@id=login-button").click()
+            time.sleep(10)
+            user_ele = self.page.ele("@id=current-user")
+            if not user_ele:
+                logger.error("登录失败")
+                List.append("❌每日登录失败")
+                return False
+            else:
+                logger.info("登录成功")
+                List.append("✅每日登录成功")
+                return True
         else:
-            logger.info("登录成功")
-            List.append("✅每日登录成功")
-            return True
+            self.page.get("https://ping0.cc/geo")
+            ip_addr = self.page.ele('tag:body').text
+            logger.info(f"当前ip无法访问：\n {ip_addr}")
+            List.append(f"当前ip无法访问：\n {ip_addr}")
+            return False
 
     def click_topic(self):
         topic_list = self.page.ele("@id=list-area").eles(".:title")
@@ -222,15 +225,16 @@ class LinuxDoBrowser:
     def run(self):
         if not self.login():  # 登录
             logger.error("登录失败，程序终止")
-            self.send_notifications(BROWSE_ENABLED)  # 发送通知
+            self.send_notifications()  # 发送通知
             sys.exit(1)  # 使用非零退出码终止整个程序
 
         if BROWSE_ENABLED:
             self.click_topic()  # 点击主题
             logger.info("完成浏览任务")
+            List.append("完成浏览任务")
 
         self.print_connect_info()  # 打印连接信息
-        self.send_notifications(BROWSE_ENABLED)  # 发送通知
+        self.send_notifications()  # 发送通知
         self.page.close()
         self.browser.quit()
 
@@ -273,15 +277,14 @@ class LinuxDoBrowser:
             List.append("连接错误，请检查！（账户等级过低，无法查看任务信息）")
         page.close()
 
-    def send_notifications(self, browse_enabled):
-        if browse_enabled:
-            List.append("浏览任务完成")
+    def send_notifications(self):
         msg = '\n'.join(List)
         send("LINUX DO", msg)
 
 if __name__ == "__main__":
     if not USERNAME or not PASSWORD:
         print("Please set USERNAME and PASSWORD")
+        send("LINUX DO", "Please set USERNAME and PASSWORD")
         exit(1)
     l = LinuxDoBrowser()
     l.run()

@@ -2,16 +2,16 @@
 
 ## 项目描述
 
-这个项目用于自动登录 [LinuxDo](https://linux.do/) 网站并随机读取几个帖子。它使用 Python 和 Playwright
+这个项目用于自动登录 [LinuxDo](https://linux.do/) 网站并随机读取几个帖子。它使用 Python 和 DrissionPage
 自动化库模拟浏览器登录并浏览帖子，以达到自动签到的功能。
 
 ## 功能
 
 - 自动登录`LinuxDo`。
 - 自动浏览帖子。
-- 每天在`GitHub Actions`中自动运行。
-- 支持`青龙面板` 和 `Github Actions` 自动运行。
-- 全平台通知功能，推送获取签到结果和任务清单
+- 每天可随机触发在`GitHub Actions`中自动运行2次。(需设置PAT变量)
+- 全平台通知功能，推送获取的任务清单
+- 手动/自动同步更新上游仓库`sync.yml`(需设置PAT变量)
 ## 环境变量配置
 
 ### 基础变量
@@ -21,6 +21,7 @@
 | `LINUXDO_USERNAME` | 必须     | 你的 LinuxDo 用户名或邮箱 | `your_username` 或 `your@email.com` |
 | `LINUXDO_PASSWORD` | 必须     | 你的 LinuxDo 密码     | `your_password`                    |
 | `BROWSE_ENABLED`   | 非必须   | 是否启用浏览帖子功能        | `true` 或 `false`，默认为 `true`           |
+| `PAT`   | 非必须  | 同步更新上游仓库/随机触发Actions运行的密钥 | `ghp_XXXXXXXXXX`  *具有`workflow`权限的PAT密钥*  [创建教程](https://github.com/grbnb/random-workflow-cron/blob/v2/README.md#troubleshooting)      |
 
 ~~之前的USERNAME和PASSWORD环境变量仍然可用，但建议使用新的环境变量~~
 
@@ -34,7 +35,7 @@
 | `CONSOLE` | `false/true` | 非必须 | 是否控制台输出 |
 |-|-|-|-|
 | `PUSH_KEY` | 微信server酱推送 | 非必须 | server酱的微信通知[官方文档](http://sc.ftqq.com/3.version)，已兼容 [Server酱·Turbo版](https://sct.ftqq.com/)   |
-|    `BARK_PUSH`    | [BARK推送](https://apps.apple.com/us/app/bark-customed-notifications/id1403753865) | 非必须 | IOS用户下载BARK这个APP,填写内容是app提供的`设备码`，例如：https://api.day.app/123 ，那么此处的设备码就是`123`, 再不懂看 [这个图](img/bark.jpg)（注：支持自建填完整链接即可） |
+|    `BARK_PUSH`    | [BARK推送](https://apps.apple.com/us/app/bark-customed-notifications/id1403753865) | 非必须 | IOS用户下载BARK这个APP,填写内容是app提供的`设备码`，例如：https://api.day.app/123 ，那么此处的设备码就是`123`, 再不懂看 [这个图](https://github.com/grbnb/python_notify/blob/main/img/bark.jpg)（注：支持自建填完整链接即可） |
 | `BARK_ARCHIVE`  | [BARK推送](https://apps.apple.com/us/app/bark-customed-notifications/id1403753865) | 非必须 | 推送是否存档 |
 | `BARK_GROUP` | [BARK推送](https://apps.apple.com/us/app/bark-customed-notifications/id1403753865) | 非必须 | bark 推送分组 |
 | `BARK_SOUND` | [BARK推送](https://apps.apple.com/us/app/bark-customed-notifications/id1403753865) | 非必须 | bark推送声音设置，例如`choo`,具体值请在`bark`-`推送铃声`-`查看所有铃声` |
@@ -42,7 +43,7 @@
 | `BARK_LEVEL` | [BARK推送](https://apps.apple.com/us/app/bark-customed-notifications/id1403753865) | 非必须 | bark 推送时效性 |
 | `BARK_URL` | [BARK推送](https://apps.apple.com/us/app/bark-customed-notifications/id1403753865) | 非必须 | bark 推送跳转URL |
 | `DD_BOT_TOKEN` | 钉钉推送 | 非必须 | 钉钉推送(`DD_BOT_TOKEN`和`DD_BOT_SECRET`两者必需)[官方文档](https://developers.dingtalk.com/document/app/custom-robot-access) ,只需`https://oapi.dingtalk.com/robot/send?access_token=XXX` 等于`=`符号后面的XXX即可 |
-| `DD_BOT_SECRET` | 钉钉推送 | 非必须 | (`DD_BOT_TOKEN`和`DD_BOT_SECRET`两者必需) ,密钥，机器人安全设置页面，加签一栏下面显示的SEC开头的`SECXXXXXXXXXX`等字符 , 注:钉钉机器人安全设置只需勾选`加签`即可，其他选项不要勾选, 再不懂看 [这个图](img/DD_bot.png) |
+| `DD_BOT_SECRET` | 钉钉推送 | 非必须 | (`DD_BOT_TOKEN`和`DD_BOT_SECRET`两者必需) ,密钥，机器人安全设置页面，加签一栏下面显示的SEC开头的`SECXXXXXXXXXX`等字符 , 注:钉钉机器人安全设置只需勾选`加签`即可，其他选项不要勾选, 再不懂看 [这个图](https://github.com/grbnb/python_notify/blob/main/img/DD_bot.png) |
 |  `FSKEY`  |  飞书推送  | 非必须 | 飞书机器人的 `FSKEY` |
 |  `GOBOT_URL`  |  go-cqhttp推送  | 非必须 | (1)推送到个人QQ：`http://127.0.0.1/send_private_msg` <br>(2)推送到群：`http://127.0.0.1/send_group_msg` |
 |  `GOBOT_QQ`  |  go-cqhttp推送  | 非必须 | go-cqhttp 的推送群或用户 GOBOT_URL 设置 <br> /send_private_msg 时填入 user_id=个人QQ <br> /send_group_msg 时填入 group_id=QQ群 |
@@ -75,8 +76,8 @@
 | `QYWX_KEY` | 企业微信机器人推送 | 非必须 | 密钥，企业微信推送 webhook 后面的 key [详见官方说明文档](https://work.weixin.qq.com/api/doc/90000/90136/91770) |
 | `QYWX_AM` | 企业微信应用消息推送 | 非必须 | corpid,corpsecret,touser,agentid,素材库图片id [参考文档1](http://note.youdao.com/s/HMiudGkb) [参考文档2](http://note.youdao.com/noteshare?id=1a0c8aff284ad28cbd011b29b3ad0191)<br>素材库图片填0为图文消息, 填1为纯文本消息 |
 | `QYWX_ORIGIN` | 企业微信机器人推送 | 非必须 | 企业微信推送代理地址 |
-| `TG_BOT_TOKEN` | telegram推送  | 非必须 | tg推送(需设备可连接外网),`TG_BOT_TOKEN`和`TG_USER_ID`两者必需,填写自己申请[@BotFather](https://t.me/BotFather)的Token,如`10xxx4:AAFcqxxxxgER5uw` , [具体教程](./TG_PUSH.md) |
-|   `TG_USER_ID`    | telegram推送 | 非必须 | tg推送(需设备可连接外网),`TG_BOT_TOKEN`和`TG_USER_ID`两者必需,填写[@getuseridbot](https://t.me/getuseridbot)中获取到的纯数字ID, [具体教程](./TG_PUSH.md) |
+| `TG_BOT_TOKEN` | telegram推送  | 非必须 | tg推送(需设备可连接外网),`TG_BOT_TOKEN`和`TG_USER_ID`两者必需,填写自己申请[@BotFather](https://t.me/BotFather)的Token,如`10xxx4:AAFcqxxxxgER5uw` , [具体教程](https://github.com/grbnb/python_notify/blob/main/TG_PUSH.md) |
+|   `TG_USER_ID`    | telegram推送 | 非必须 | tg推送(需设备可连接外网),`TG_BOT_TOKEN`和`TG_USER_ID`两者必需,填写[@getuseridbot](https://t.me/getuseridbot)中获取到的纯数字ID, [具体教程](https://github.com/grbnb/python_notify/blob/main/TG_PUSH.md) |
 | `TG_API_HOST` | telegram推送 | 非必须 | tg 代理 api |
 | `TG_PROXY_AUTH` | telegram推送 | 非必须 | tg 代理认证参数 |
 | `TG_PROXY_HOST` | Telegram 代理的 IP | 非必须 | 代理类型为 http。例子：http代理 http://127.0.0.1:1080 则填写 127.0.0.1 |
@@ -115,11 +116,12 @@
     - 在 GitHub 仓库的 `Settings` -> `Secrets and variables` -> `Actions` 中添加以下变量：
         - `LINUXDO_USERNAME`：你的 LinuxDo 用户名或邮箱。
         - `LINUXDO_PASSWORD`：你的 LinuxDo 密码。
+        - (可选)`PAT`：具有`workflow`权限的PAT密钥 [创建教程](https://github.com/grbnb/random-workflow-cron/blob/v2/README.md#troubleshooting)
         - (可选) `BROWSE_ENABLED`：是否启用浏览帖子，`true` 或 `false`，默认为 `true`。
         - (可选) `GOTIFY_URL` 和 `GOTIFY_TOKEN`。
         - (可选) `PUSH_KEY`。
         - (可选) `TG_BOT_TOKEN` 和 `TG_USER_ID`。
-
+    
 2. **手动触发工作流**：
     - 进入 GitHub 仓库的 `Actions` 选项卡。
     - 选择你想运行的工作流。
@@ -135,60 +137,8 @@
 （新号可能这里为空，多挂几天就有了）
 ![image](https://github.com/user-attachments/assets/853549a5-b11d-4d5a-9284-7ad2f8ea698b)
 
-### 青龙面板使用
 
-*注意：如果是docker容器创建的青龙，**请使用`whyour/qinglong:debian`镜像**，latest（alpine）版本可能无法安装部分依赖*
-
-1. **依赖安装**
-    - 首次运行前需要安装Python依赖
-    - 进入青龙面板 -> 依赖管理 -> 安装依赖
-      - 依赖类型选择`python3`
-      - 自动拆分选择`是`
-      - 名称填写(仓库`requirements.txt`文件的完整内容)：
-        ```
-        DrissionPage==4.1.0.9
-        PyVirtualDisplay==3.0
-        wcwidth==0.2.13
-        tabulate==0.9.0
-        loguru==0.7.2
-        requests==2.32.3
-        ```
-      - 点击`确定`按钮，等待安装完成
-
-2. **添加仓库**
-    - 进入青龙面板 -> 订阅管理 -> 创建订阅
-    - 依次在对应的字段填入内容（未提及的不填）：
-      - **名称**：Linux.DO 签到
-      - **类型**：公开仓库
-      - **链接**：https://github.com/doveppp/linuxdo-checkin.git
-      - **分支**：main
-      - **定时类型**：`crontab`
-      - **定时规则**(拉取上游代码的时间，一天一次，可以自由调整频率): 0 0 * * *
-      - **执行前**(注意：要先完成上一步的依赖安装才能执行这个指令)：`playwright install --with-deps firefox`
-
-3. **配置环境变量**
-    - 进入青龙面板 -> 环境变量 -> 创建变量
-    - 需要配置以下变量：
-        - `LINUXDO_USERNAME`：你的LinuxDo用户名/邮箱
-        - `LINUXDO_PASSWORD`：你的LinuxDo密码
-        - (可选) `BROWSE_ENABLED`：是否启用浏览帖子功能，`true` 或 `false`，默认为 `true`
-        - (可选) `GOTIFY_URL`：Gotify服务器地址
-        - (可选) `GOTIFY_TOKEN`：Gotify应用Token
-        - (可选) `PUSH_KEY`：Server酱³ SendKey        
-        - (可选) `TG_BOT_TOKEN`：Telegram Bot Token
-        - (可选) `TG_USER_ID`：Telegram用户ID
-
-4. **手动拉取脚本**
-    - 首次添加仓库后不会立即拉取脚本，需要等待到定时任务触发，当然可以手动触发拉取
-    - 点击右侧"运行"按钮可手动执行
-
-#### 运行结果
-
-##### 青龙面板中查看
-- 进入青龙面板 -> 定时任务 -> 找到`Linux.DO 签到` -> 点击右侧的`日志`
-
-
-### Telegram 通知
+### Telegam 通知
 
 可选功能：配置 Telegram 通知，实时获取签到结果。
 
@@ -205,8 +155,11 @@
 
 ## 自动更新
 
-- **Github Actions**：默认状态下自动更新是关闭的，[点击此处](https://github.com/ChatGPTNextWeb/ChatGPT-Next-Web/blob/main/README_CN.md#%E6%89%93%E5%BC%80%E8%87%AA%E5%8A%A8%E6%9B%B4%E6%96%B0)
-查看打开自动更新步骤。
-- **青龙面板**：更新是以仓库设置的定时规则有关，按照本文配置，则是每天0点更新一次。
+- **Github Actions**：~~默认状态下自动更新是关闭的，[点击此处](https://github.com/ChatGPTNextWeb/ChatGPT-Next-Web/blob/main/README_CN.md#%E6%89%93%E5%BC%80%E8%87%AA%E5%8A%A8%E6%9B%B4%E6%96%B0)
+查看打开自动更新步骤。~~
 
+## 手动更新代码
 
+- 让仓库代码同步更新本仓库
+
+![sync](https://github.com/user-attachments/assets/c3a3e731-72a4-45dc-a713-f90a1f3b5538)
